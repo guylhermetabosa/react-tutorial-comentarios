@@ -28,12 +28,31 @@ var Comentario = React.createClass({
 
 var FormComentario = React.createClass({
 
+	getInitialState: function() {
+	    return {
+	          autor: '', texto:''
+	    };
+	},
+
+	handleAutorChange: function(event){
+		var autor = event.target.value;
+		this.setState({autor: autor});
+		console.log(autor);
+	},
+
+	handleComentarioChange: function(event){
+		var comentario = event.target.value;
+		this.setState({texto: comentario});
+		console.log(comentario);
+	},
+
+
 	render: function(){
 		return (
 			<div className="commentForm">
 				<form>
-					<input type="text" placeholder="Nome" />
-					<input type="text" placeholder="Comentário" />
+					<input type="text" placeholder="Nome" value={this.state.autor} onChange={this.handleAutorChange}/>
+					<input type="text" placeholder="Comentário" value={this.state.texto} onChange={this.handleComentarioChange} />
 					<input type="submit" value="Comentar" />
 				</form>
 			</div>
