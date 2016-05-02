@@ -1,11 +1,3 @@
-var data = [
-  {id: 1, autor: "Guylherme Tabosa", texto: "Este foi um comentário"},
-  {id: 2, autor: "João da Silva", texto: "Este foi *outro* comentário"},
-  {id: 3, autor: "José Feitosa", texto: "Este foi *mais* um comentário"},
-  {id: 4, autor: "Toim Felix", texto: "Este foi *um* comentário"},
-  {id: 5, autor: "Eudimar Antunes", texto: "Este foi *um baita* comentário"}
-];
-
 var Comentario = React.createClass({
 
  	  rawMarkup: function() {
@@ -37,25 +29,38 @@ var FormComentario = React.createClass({
 	handleAutorChange: function(event){
 		var autor = event.target.value;
 		this.setState({autor: autor});
-		console.log(autor);
 	},
 
 	handleComentarioChange: function(event){
 		var comentario = event.target.value;
 		this.setState({texto: comentario});
-		console.log(comentario);
+	},
+
+	handleFormSubmit: function(event){
+		event.preventDefault();
+
+		var autor = this.state.autor.trim();
+		var comentario = this.state.texto.trim();
+
+		// console.log(autor);
+		// console.log(comentario);
+		if(!autor || !comentario){
+			return;
+		}
+
+		this.props.onComentarioSubmit({autor: autor, texto: comentario});
+		this.setState({autor: '', texto: ''});
 	},
 
 
 	render: function(){
 		return (
-			<div className="commentForm">
-				<form>
+				<form className="commentForm" onSubmit={this.handleFormSubmit}>
 					<input type="text" placeholder="Nome" value={this.state.autor} onChange={this.handleAutorChange}/>
 					<input type="text" placeholder="Comentário" value={this.state.texto} onChange={this.handleComentarioChange} />
 					<input type="submit" value="Comentar" />
 				</form>
-			</div>
+			
 		)
 	}
 
@@ -105,6 +110,26 @@ var BoxComentario = React.createClass({
 	      });
 	},
 
+	handleComentarioSubmit: function(comentario){
+		var comentarios = this.state.data;
+		console.log(comentario);
+		comentario.id = Date.now();
+		var novosComentarios = comentarios.concat([comentario]);
+		this.setState({data: novosComentarios});
+		$.ajax({
+			url: this.props.url,
+			dataType: 'json',
+			type: 'POST',
+			data: comentario,
+			success: function(data){
+				this.setState({data: data});
+			}.bind(this),
+			error: function(xhr, status, error){
+				console.error(this.props.url, status, error.toString());
+			}.bind(this)
+		});
+	},
+
 	componentDidMount: function() {
 		this.carregaComentariosServer();
 		setInterval(this.carregaComentariosServer, this.props.updateTime);
@@ -116,7 +141,7 @@ var BoxComentario = React.createClass({
 			<div className="commentBox">
 				<h1> Comentários </h1>
 				<ListaComentario data={this.state.data} />
-				<FormComentario />
+				<FormComentario onComentarioSubmit={this.handleComentarioSubmit}/>
 			</div>
 		);
 	}
